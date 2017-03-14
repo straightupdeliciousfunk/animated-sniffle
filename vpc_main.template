@@ -1,0 +1,101 @@
+
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Nested CloudFormation network stack.",
+    "Metadata": {
+        "Comment1":"Nested CloudFormation templates to create main network stack."
+    },
+    "Parameters": {
+        "VpcCidr": {
+            "Description": "First 2 octects of CIDR block designation for VPC.",
+            "Type": "String",
+            "AllowedPattern": "[0-9]{1,3}\\.[0-9]{1,3}",
+            "Default": "10.92"
+        },
+        "VPCName": {
+            "Description": "Custom VPC name.",
+            "Type": "String",
+            "Default": "DEVOPS"
+        },
+        "UseDNSSupport": {
+            "Description": "Specifies whether DNS resolution is supported for the VPC.",
+            "Type": "String",
+            "AllowedValues": ["true", "false"],
+            "Default": "true"
+        },
+        "UseDNSHostnames": {
+            "Description": "Specifies whether the instances launched in the VPC get DNS hostnames.",
+            "Type": "String",
+            "AllowedValues": ["true", "false"],
+            "Default": "true"
+        },
+        "Environment" : {
+          "Description" : "Environment the stack is deployed to such as prodution, test, or development.",
+          "Type" : "String",
+          "Default" : "DEV",
+          "AllowedValues" : ["DEV","TEST","PROD","STAGE"]
+        },
+       "Organization": {
+          "Description": "Organization the VPC is associated with.",
+          "Type": "String",
+          "Default": "GeoInt Services"
+       },
+       "POC": {
+          "Description": "The name to identify the VPN in the AWS Console",
+          "Type": "String",
+          "Default": "Test POC"
+      },
+      "SystemTag": {
+          "Description": "System to tag resources with.",
+          "Type": "String",
+          "Default": "DEVOPS"
+      }
+    },
+    "Conditions": {
+        "CreateProdResources" : {"Fn::Equals" : [{"Ref" : "Environment"}, "PROD"]},
+        "CreateDevResources" : {"Fn::Equals" : [ {"Ref": "Environment"}, "DEV"]},
+        "CreateTestResoures" : {"Fn::Equals" : [ {"Ref": "Environment"}, "TEST"]},
+        "CreateStageResoures" : {"Fn::Equals" : [ {"Ref": "Environment"}, "STAGE"]}                
+
+    },
+    "Resources": {
+        "VPCStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://s3.amazonaws.com/ohararp-cloudformation-testing/vpc_baseline.template",
+                "TimeoutInMinutes": "15",
+                "Parameters": {
+                    "VpcCidr": {"Ref": "VpcCidr"},
+                    "VPCName": {"Ref": "VPCName"},
+                    "POC": {"Ref": "POC"},
+                    "SystemTag": {"Ref": "SystemTag"},
+                    "Organization": {"Ref": "Organization"},
+                    "UseDNSSupport": {"Ref": "UseDNSSupport"},
+                    "UseDNSHostnames": {"Ref": "UseDNSHostnames"}
+                },
+                "Tags": [
+                    {"Key": "Name", "Value": {"Fn::Join":["-",["NOT","PROD","DEVOPS",{"Ref":"Environment"},"Networking"]]}},
+                    {"Key": "POC", "Value":{"Ref":"POC"}},
+                    {"Key": "Oganization", "Value":{"Ref":"Organization"}}
+                ]
+            }
+        },
+
+       "Subnets": {
+           "DependsOn": ["VPCStack"],
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://s3.amazonaws.com/ohararp-cloudformation-testing/subnets.template",
+                "TimeoutInMinutes": "15",
+                "Tags":[
+                    {"Key": "Name", "Value": {"Fn::Join":["-",["NOT","PROD","DEVOPS",{"Ref":"Environment"},"Networking"]]}},
+                    {"Key": "POC", "Value":{"Ref":"POC"}},
+                    {"Key": "Oganization", "Value":{"Ref":"Organization"}}
+                ]
+            }
+        }        
+ 
+    },
+    "Outputs": {}
+}
+    

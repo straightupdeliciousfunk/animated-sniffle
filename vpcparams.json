@@ -1,0 +1,27 @@
+[
+    {
+        "ParameterKey": "VPCName",
+        "ParameterValue": "MyTest"
+    },
+
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "test"
+    },
+    {
+        "ParameterKey": "UseDNSSupport",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "UseDNSHostnames",
+        "ParameterValue": "false"
+    },
+   {
+       "ParameterKey": "Organization",
+       "ParameterValue": "FADE"
+   },
+   {
+       "ParameterKey": "POC",
+       "ParameterValue": "tester"
+   }
+]
